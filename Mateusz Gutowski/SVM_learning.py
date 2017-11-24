@@ -21,7 +21,7 @@ sp5 = dlib.shape_predictor(predictor68_path)
 sp68 = dlib.shape_predictor(predictor68_path)
 facerec = dlib.face_recognition_model_v1(face_rec_model_path)
 def get_features(im):
-    # dets = detector(im, 1)
+  #  dets = detector(im, 1)
     faces = faceCascade.detectMultiScale(im)
     # print("Faces:",faces)
     if len(faces) == 0:
@@ -142,37 +142,24 @@ def run_recognizer():
             incorrect += 1
             cnt += 1
 
-
+    # return ((100 * correct) / (correct + incorrect))
     return clf
-
-
-
-
-# image = cv2.imread("face1.jpg")
-# gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #convert to grayscale
-# image = get_features(gray)
-# pred = clf.predict([image])
-# print(pred)
 
 
 check_new_emotion = True
 gray = None
 
-def video_go():
+def camera_go():
     global gray
     global check_new_emotion
-    frame_step = 0
-    counter = 0
+
     cap = cv2.VideoCapture(0)
     while (True):
         # Capture frame-by-frame
         ret, frame = cap.read()
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        if counter == frame_step:
-            check_new_emotion = True
-            counter = 0
-        counter += 1
+
 
         features = get_features(gray)
         try:
@@ -180,6 +167,7 @@ def video_go():
             print(pred)
         except:
             None
+        print("nie")
 
 
         cv2.imshow('frame', frame)
@@ -189,6 +177,39 @@ def video_go():
     # When everything done, release the capture
     cap.release()
     cv2.destroyAllWindows()
+
+def videoFile_go():
+    counter = 0
+    frameStep = 10
+    # cap = cv2.VideoCapture("./set krzysia/zaskoczenie/krzys4.mp4")
+    # cap = cv2.VideoCapture("./set krzysia/radość/krzys18.mp4")
+    # cap = cv2.VideoCapture("./set krzysia/obrzydzenie/krzys21.mp4")
+    cap = cv2.VideoCapture("./set krzysia/strach/krzys8.mp4")
+
+    features = None
+
+    while (cap.isOpened()):
+        ret, frame = cap.read()
+        counter += 1
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        if frameStep == counter:
+            counter = 0
+            features = get_features(gray)
+        try:
+            pred = clf.predict([features])
+            print(pred)
+        except:
+            None
+        print("nie")
+
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
+    cap.release()
+    cv2.destroyAllWindows()
+
 
 def features_check():
     global check_new_emotion
@@ -208,28 +229,12 @@ def features_check():
         print(pred)
 
 
-# if __name__ == '__main__':
-#     mp.set_start_method('spawn')
-#     q = mp.Queue()
-#     p = mp.Process(target=foo, args=(q,))
-#     p.start()
-#     print(q.get())
-#     p.join()
 
-
-
-#_thread        TNIE!
 clf = run_recognizer()
-
-# metascore = []
-# for i in range(0, 3):
-#     correct = run_recognizer()
-#     print("Test: got", correct, "percent correct!")
-#     metascore.append(correct)
-#
 while 1:
-    video_go()
-    # features_check()
+    # camera_go()
+    # featuqres_check()
+    videoFile_go()
 
 
 # try:

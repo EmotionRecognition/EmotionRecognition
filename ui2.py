@@ -131,10 +131,10 @@ class Ui_Dialog():
         except:
             print('camera dead')
 
-    def stopPlaying(self):
-        self.player.pause()
-    def play(self):
-        self.player.play()
+    # def stopPlaying(self):
+    #     self.player.pause()
+    # def play(self):
+    #     self.player.play()
         
     def startVideo(self, url):
         self.url = url
@@ -210,27 +210,28 @@ class Ui_Dialog():
             self.stop_movie_button = QtWidgets.QPushButton(self.frame_2)
             self.stop_movie_button.setGeometry(QtCore.QRect(500, 70, 181, 61))
             self.stop_movie_button.setObjectName("stop")
-            self.stop_movie_button.clicked.connect(self.stopPlaying)
+            # self.stop_movie_button.clicked.connect(self.stopPlaying)
+            self.stop_movie_button.clicked.connect(self.endCapture)
 
-            self.play_movie_button = QtWidgets.QPushButton(self.frame_2)
-            self.play_movie_button.setGeometry(QtCore.QRect(500, 140, 181, 61))
-            self.play_movie_button.setObjectName("play")
-            self.play_movie_button.clicked.connect(self.play)
+            # self.play_movie_button = QtWidgets.QPushButton(self.frame_2)
+            # self.play_movie_button.setGeometry(QtCore.QRect(500, 140, 181, 61))
+            # self.play_movie_button.setObjectName("play")
+            # self.play_movie_button.clicked.connect(self.play)
 
-            self.player = QMediaPlayer(self.frame_2)
-            self.video = QVideoWidget(self.frame_2)
-            self.graphicsView = QGraphicsView(self.frame_2)
-            self.graphicsView.scene()
-            self.graphicsView.setStyleSheet("background-color: #000;")
-            self.graphicsView.setViewport(self.video)
-            self.graphicsView.setGeometry(QtCore.QRect(0, 0, 500, 500))
-            self.graphicsView.show()
-            self.video.setStyleSheet("background-color: #000;")
-            # self.player.setMedia(QMediaContent(QUrl('test.wmv')))
-            self.player.setVideoOutput(self.video)
-            self.player.setPosition(200)
-            self.video.setGeometry(QtCore.QRect(100, 100, 1000, 1000))
-            self.video.show()
+            # self.player = QMediaPlayer(self.frame_2)
+            # self.video = QVideoWidget(self.frame_2)
+            # self.graphicsView = QGraphicsView(self.frame_2)
+            # self.graphicsView.scene()
+            # self.graphicsView.setStyleSheet("background-color: #000;")
+            # self.graphicsView.setViewport(self.video)
+            # self.graphicsView.setGeometry(QtCore.QRect(0, 0, 500, 500))
+            # self.graphicsView.show()
+            # self.video.setStyleSheet("background-color: #000;")
+            # # self.player.setMedia(QMediaContent(QUrl('test.wmv')))
+            # self.player.setVideoOutput(self.video)
+            # self.player.setPosition(200)
+            # self.video.setGeometry(QtCore.QRect(100, 100, 1000, 1000))
+            # self.video.show()
 
             self.tabWidget = QtWidgets.QTabWidget(Dialog)
             self.tabWidget.setEnabled(True)
@@ -298,13 +299,13 @@ class Ui_Dialog():
             self.obrzydzenie_label.setGeometry(QtCore.QRect(730, 330, 91, 20))
             self.obrzydzenie_label.setObjectName("obrzydzenie_label")
 
-            self.readEmotions = QtWidgets.QPushButton(Dialog)
-            self.readEmotions.setGeometry(QtCore.QRect(700, 390, 110, 50))
-            self.readEmotions.clicked.connect(self.readPercentValues)
+            # self.readEmotions = QtWidgets.QPushButton(Dialog)
+            # self.readEmotions.setGeometry(QtCore.QRect(700, 390, 110, 50))
+            # self.readEmotions.clicked.connect(self.readPercentValues)
 
-            self.stopReadEmotions = QtWidgets.QPushButton(Dialog)
-            self.stopReadEmotions.setGeometry(QtCore.QRect(700, 460, 110, 50))
-            self.stopReadEmotions.clicked.connect(self.endCapture)
+            # self.stopReadEmotions = QtWidgets.QPushButton(Dialog)
+            # self.stopReadEmotions.setGeometry(QtCore.QRect(700, 460, 110, 50))
+            # self.stopReadEmotions.clicked.connect(self.endCapture)
 
             self.radioCamera = QtWidgets.QRadioButton(Dialog)
             self.radioCamera.setGeometry(QtCore.QRect(700, 520, 41, 17))
@@ -359,11 +360,11 @@ class Ui_Dialog():
             self.radioPhotoLabel.setText(_translate("Dialog", "photo"))
             self.start_button.setText(_translate("Dialog", "Start camera"))
             self.get_photo_button.setText(_translate("Dialog", "get photo"))
-            self.play_movie_button.setText(_translate("Dialog", "play"))
+            # self.play_movie_button.setText(_translate("Dialog", "play"))
             self.stop.setText(_translate("Dialog", "Stop camera"))
             self.start_movie_button.setText(_translate("Dialog", "Get movie"))
-            self.readEmotions.setText(_translate("Dialog", "Start read emotions"))
-            self.stopReadEmotions.setText(_translate("Dialog", "Stop read emotions"))
+            # self.readEmotions.setText(_translate("Dialog", "Start read emotions"))
+            # self.stopReadEmotions.setText(_translate("Dialog", "Stop read emotions"))
             self.stop_movie_button.setText(_translate("Dialog", "Stop movie"))
 
 

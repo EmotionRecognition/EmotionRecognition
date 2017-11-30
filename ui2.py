@@ -61,13 +61,13 @@ class Ui_Dialog():
             
     def startCapture(self):
         self.capturing = True
-        cap = cv2.VideoCapture(self.url)
+        self.cap = cv2.VideoCapture(self.url)
         counter = 0
         frameStep = 10
         features = None
         
-        while (cap.isOpened()):
-            ret, frame = cap.read()
+        while (self.cap.isOpened()):
+            ret, frame = self.cap.read()
             counter += 1
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             if frameStep == counter:
@@ -75,31 +75,37 @@ class Ui_Dialog():
                 features = get_features(gray)
             try:
                 pred = clf.predict([features])
-                print(Emotions(int(str(pred).strip('[').strip(']'))).name)
+                #print(clf.predict_proba([features]))
+                #print(Emotions(int(str(pred).strip('[').strip(']'))).name)
                 self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name)
             except Exception as err:
-                print(err)
+                pass#print(err)
 
             cv2.imshow('frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        cap.release()
+        self.cap.release()
         cv2.destroyAllWindows()
         
     def endCapture(self):
         self.capturing = False
+        try: 
+            self.cap.release()
+            cv2.destroyAllWindows()
+        except AttributeError:
+            print('There is no started camera')
 
     def ready(self):
         print("ready")
 
     def readPercentValues(self, emotion):       
 
-        if self.radioCamera.isChecked():
-            print('camera checked')
-        if self.radioMovie.isChecked():
-            print('movie checked')
-        if self.radioPhoto.isChecked():
-            print('photo checked')
+        #if self.radioCamera.isChecked():
+        #    print('camera checked')
+        #if self.radioMovie.isChecked():
+        #    print('movie checked')
+        #if self.radioPhoto.isChecked():
+        #    print('photo checked')
         self.smutek_progress.setValue(percentValues['sadness'])
         self.zaskoczenie_progress.setValue(percentValues['surprise'])
         self.strach_progress.setValue(percentValues['fear'])
@@ -117,18 +123,15 @@ class Ui_Dialog():
             self.startCapture()
         except Exception as err:
             print('camera dead', err)
-
-    # def stopPlaying(self):
-    #     self.player.pause()
-    # def play(self):
-    #     self.player.play()
-        
+      
     def startVideo(self, url):
         self.url = url
         try:
             self.startCapture()
         except:
-            print('camera dead')
+            print('video dead')
+            self.cap.release()
+            cv2.destroyAllWindows()
     
 
 
@@ -150,8 +153,18 @@ class Ui_Dialog():
                                                   "All Files (*);;WMV Files (*.wmv)", options=options)
         if fileName:
             try:
+                image = cv2.imread(fileName) #open image
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #convert to grayscale
+                features = get_features(gray)
+                try:
+                    pred = clf.predict([features])
+                    self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name)
+                except Exception as err:
+                    pass#print(err)
+
                 pixmap = QPixmap(fileName)
                 self.photoImage.setPixmap(pixmap)
+                
             except:
                 print('something wrong')
 
@@ -174,6 +187,7 @@ class Ui_Dialog():
             self.stop = QtWidgets.QPushButton(self.frame)
             self.stop.setGeometry(QtCore.QRect(0, 70, 181, 61))
             self.stop.setObjectName("stop")
+            self.start_button.clicked.connect(self.endCapture)
 
             # disconnect camera
             self.stop.clicked.connect(self.endCapture)
@@ -199,26 +213,6 @@ class Ui_Dialog():
             self.stop_movie_button.setObjectName("stop")
             # self.stop_movie_button.clicked.connect(self.stopPlaying)
             self.stop_movie_button.clicked.connect(self.endCapture)
-
-            # self.play_movie_button = QtWidgets.QPushButton(self.frame_2)
-            # self.play_movie_button.setGeometry(QtCore.QRect(500, 140, 181, 61))
-            # self.play_movie_button.setObjectName("play")
-            # self.play_movie_button.clicked.connect(self.play)
-
-            # self.player = QMediaPlayer(self.frame_2)
-            # self.video = QVideoWidget(self.frame_2)
-            # self.graphicsView = QGraphicsView(self.frame_2)
-            # self.graphicsView.scene()
-            # self.graphicsView.setStyleSheet("background-color: #000;")
-            # self.graphicsView.setViewport(self.video)
-            # self.graphicsView.setGeometry(QtCore.QRect(0, 0, 500, 500))
-            # self.graphicsView.show()
-            # self.video.setStyleSheet("background-color: #000;")
-            # # self.player.setMedia(QMediaContent(QUrl('test.wmv')))
-            # self.player.setVideoOutput(self.video)
-            # self.player.setPosition(200)
-            # self.video.setGeometry(QtCore.QRect(100, 100, 1000, 1000))
-            # self.video.show()
 
             self.tabWidget = QtWidgets.QTabWidget(Dialog)
             self.tabWidget.setEnabled(True)
@@ -285,14 +279,6 @@ class Ui_Dialog():
             self.obrzydzenie_label = QtWidgets.QLabel(Dialog)
             self.obrzydzenie_label.setGeometry(QtCore.QRect(730, 330, 91, 20))
             self.obrzydzenie_label.setObjectName("obrzydzenie_label")
-
-            # self.readEmotions = QtWidgets.QPushButton(Dialog)
-            # self.readEmotions.setGeometry(QtCore.QRect(700, 390, 110, 50))
-            # self.readEmotions.clicked.connect(self.readPercentValues)
-
-            # self.stopReadEmotions = QtWidgets.QPushButton(Dialog)
-            # self.stopReadEmotions.setGeometry(QtCore.QRect(700, 460, 110, 50))
-            # self.stopReadEmotions.clicked.connect(self.endCapture)
 
             self.radioCamera = QtWidgets.QRadioButton(Dialog)
             self.radioCamera.setGeometry(QtCore.QRect(700, 520, 41, 17))

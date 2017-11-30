@@ -1,12 +1,12 @@
 import random
 import sys
-from enum import Enum
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QGraphicsView, QFileDialog
 from cv2 import cv2
+from model import Emotions, get_features
 
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -29,15 +29,6 @@ percentValues = {
     'surprise': 0
 }
 
-class Emotions(Enum):
-   neutral = 0
-   anger = 1
-   contempt = 2
-   disgust = 3
-   fear = 4
-   happy = 5
-   sadness = 6
-   surprise = 7
 
 feelings_faces = []
 
@@ -58,10 +49,6 @@ def readPercentValues():
 
 readPercentValues()
 addEmojiToArray()
-
-
-
-
 
 class Ui_Dialog():
     def __init__(self, Form, url=0, capturing=False):
@@ -128,8 +115,8 @@ class Ui_Dialog():
         self.url = 0
         try:
             self.startCapture()
-        except:
-            print('camera dead')
+        except Exception as err:
+            print('camera dead', err)
 
     # def stopPlaying(self):
     #     self.player.pause()

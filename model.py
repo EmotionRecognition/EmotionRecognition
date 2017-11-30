@@ -1,9 +1,19 @@
 from sklearn import svm
 import dlib
-from cv2 import cv2
-from ui2 import Emotions 
+from cv2 import cv2 
 import glob
 import random
+from enum import Enum
+
+class Emotions(Enum):
+   neutral = 0
+   anger = 1
+   contempt = 2
+   disgust = 3
+   fear = 4
+   happy = 5
+   sadness = 6
+   surprise = 7
 
 predictor5_path = "./shape_predictor_5_face_landmarks.dat"
 predictor68_path = "./shape_predictor_68_face_landmarks.dat"
@@ -117,5 +127,5 @@ def get_features(im):
             cur_feat.append(feat_x)
             cur_feat.append(feat_y)
     return cur_feat
-	
-clf = run_recognizer()
+if __name__ == '__main__':
+    clf = run_recognizer()

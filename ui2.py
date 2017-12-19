@@ -1,22 +1,27 @@
 import random
 import sys
-
+import dlib
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QGraphicsView, QFileDialog
-from cv2 import cv2
-from model import Emotions, get_features
-
-
+import cv2
+# from model import Emotions, get_features
+from enum import Enum
+from sklearn.externals import joblib
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets, QtMultimedia
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets, QtMultimedia
 
 import cv2
 import numpy as np
 import os
 import pickle
+
+predictor68_path = "./shape_predictor_68_face_landmarks.dat"
+faceCascade = cv2.CascadeClassifier("./haarcascades/haarcascade_frontalface_default.xml")
+sp68 = dlib.shape_predictor(predictor68_path)
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
 percentValues = {
     'neutral': 0,
@@ -31,6 +36,42 @@ percentValues = {
 
 
 feelings_faces = []
+
+class Emotions(Enum):
+   neutral = 0
+   anger = 1
+   contempt = 2
+   disgust = 3
+   fear = 4
+   happy = 5
+   sadness = 6
+   surprise = 7
+
+def get_features(im):
+    faces = faceCascade.detectMultiScale(im)
+    if len(faces) == 0:
+        return None  # no face detected :(
+
+    for (x, y, w, h) in faces:
+        cur_feat = []
+        sav_feat = []
+        x_l = x
+        x_r = x + w
+        y_t = y
+        y_b = y + h
+        d = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+
+        width = x_r - x_l
+        height = y_b - y_t
+        shape = sp68(im, d)
+        for i in range(0, 68):
+            feat_x = (shape.part(i).x - x_l) / width
+            feat_y = (shape.part(i).y - y_t) / height
+            cur_feat.append(feat_x)
+            cur_feat.append(feat_y)
+            data = np.vstack((feat_x, feat_y))
+            sav_feat.append(data)
+    return faces, sav_feat, cur_feat
 
 def addEmojiToArray():
   for emotion in Emotions:
@@ -63,7 +104,7 @@ class Ui_Dialog():
         self.capturing = True
         self.cap = cv2.VideoCapture(self.url)
         counter = 0
-        frameStep = 10
+        frameStep = 1
         features = None
         
         while (self.cap.isOpened()):
@@ -72,7 +113,31 @@ class Ui_Dialog():
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             if frameStep == counter:
                 counter = 0
-                features = get_features(gray)
+                faces, points, features = get_features(gray)
+                try:
+                    # print(len(faces))
+                    for (x, y, w, h) in faces:
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+
+                        # Converting the OpenCV rectangle coordinates to Dlib rectangle
+                        dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+                    # print(len(points))
+                    landmarks = np.matrix([[p.x, p.y]
+                                           for p in predictor(frame, dlib_rect).parts()])
+
+                    for idx, point in enumerate(landmarks):
+                        pos = (point[0, 0], point[0, 1])
+
+                        # cv2.putText(frame, str(idx), pos,
+                        #
+                        #             fontFace=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                        #             fontScale=0.4,
+                        #             color=(0, 0, 255))
+                        cv2.circle(frame, pos, 2, color=(0, 0, 255), thickness=1)
+
+                except Exception as err:
+                    pass #print(err)
             try:
                 pred = clf.predict([features])
                 #print(clf.predict_proba([features]))
@@ -80,6 +145,7 @@ class Ui_Dialog():
                 self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name)
             except Exception as err:
                 pass#print(err)
+
 
             cv2.imshow('frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -353,8 +419,9 @@ class Ui_Dialog():
 
 if __name__ == "__main__":
     #clf = run_recognizer()
-    with open('./trained_model_new74.pkl', 'rb') as handle:
+    with open('trained_model_new74.pkl', 'rb') as handle:
         clf = pickle.load(handle)
+    # clf = joblib.load('clf_lsvc.pkl')
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     Form = QtWidgets.QWidget()

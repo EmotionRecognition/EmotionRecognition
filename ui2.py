@@ -232,15 +232,43 @@ class Ui_Dialog():
             try:
                 image = cv2.imread(fileName) #open image
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #convert to grayscale
-                features = get_features(gray)
+                features, faces = get_features(gray)
+                try:
+                    # print(len(faces))
+                    i = 0
+                    # index = 0
+                    height = 0
+                    for (x, y, w, h) in faces:
+                        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        # Converting the OpenCV rectangle coordinates to Dlib rectangle
+
+                        if height < h:
+                            height = h
+                            # index = i
+                            dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+                        i += 1
+                    # print(len(points))
+
+                    landmarks = np.matrix([[p.x, p.y]
+                                           for p in predictor(image, dlib_rect).parts()])
+
+                    for idx, point in enumerate(landmarks):
+                        pos = (point[0, 0], point[0, 1])
+                        # cv2.putText(frame, str(idx), pos,
+                        #
+                        #             fontFace=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                        #             fontScale=0.4,
+                        #             color=(0, 0, 255))
+                        cv2.circle(image, pos, 2, color=(0, 0, 255), thickness=1)
+                except Exception as err:
+                    pass  # print(err)
                 try:
                     pred = clf.predict([features])
                     self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name)
                 except Exception as err:
                     pass#print(err)
 
-                pixmap = QPixmap(fileName)
-                self.photoImage.setPixmap(pixmap)
+                cv2.imshow('frame', image)
                 
             except:
                 print('something wrong')

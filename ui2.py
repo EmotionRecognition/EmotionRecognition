@@ -121,11 +121,20 @@ class Ui_Dialog():
                 try:
                     if not(faces is None):
                         # print(len(faces))
+                        i = 0
+                        # index = 0
+                        height = 0
                         for (x, y, w, h) in faces:
                             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                             # Converting the OpenCV rectangle coordinates to Dlib rectangle
-                            dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+
+                            if height < h:
+                                height = h
+                                # index = i
+                                dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+                            i += 1
                         # print(len(points))
+
                         landmarks = np.matrix([[p.x, p.y]
                                                for p in predictor(frame, dlib_rect).parts()])
 

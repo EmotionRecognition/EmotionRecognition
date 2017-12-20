@@ -11,7 +11,7 @@ from enum import Enum
 from sklearn.externals import joblib
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngine, QtMultimedia
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets, QtMultimedia
 
 import cv2
 import numpy as np
@@ -133,13 +133,15 @@ class Ui_Dialog():
                             # Converting the OpenCV rectangle coordinates to Dlib rectangle
 
                             if height < h:
-                                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                                # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                                 height = h
-                                # index = i
+                                index = i
                                 dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+                                (xb, yb, wb, hb) = (x, y, w, h)
                             i += 1
                         # print(len(points))
 
+                        cv2.rectangle(frame, (xb, yb), (xb + wb, yb + hb), (0, 255, 0), 2)
                         landmarks = np.matrix([[p.x, p.y]
                                                for p in predictor(frame, dlib_rect).parts()])
 
@@ -152,7 +154,8 @@ class Ui_Dialog():
                             #             color=(0, 0, 255))
                             cv2.circle(frame, pos, 2, color=(0, 0, 255), thickness=1)
                 except Exception as err:
-                    pass #print(err)
+                    # pass
+                    print(err)
             try:
 
                 pred = clf.predict([features])

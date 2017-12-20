@@ -80,16 +80,16 @@ def addEmojiToArray():
     print('./emojis/' + emotion.name + '.png')
 
 
+#
+# def readPercentValues():
+#     # fake
+#     for emotion in Emotions:
+#         percentValues[emotion.name] = random.randint(0, 100)
+#     print(Emotions[max(percentValues, key=lambda key: percentValues[key])])
+#     return Emotions[max(percentValues, key=lambda key: percentValues[key])]
 
-def readPercentValues():
-    # fake
-    for emotion in Emotions:
-        percentValues[emotion.name] = random.randint(0, 100)
-    print(Emotions[max(percentValues, key=lambda key: percentValues[key])])
-    return Emotions[max(percentValues, key=lambda key: percentValues[key])]
 
-
-readPercentValues()
+# readPercentValues()
 addEmojiToArray()
 
 class Ui_Dialog():
@@ -118,6 +118,10 @@ class Ui_Dialog():
                 counter = 0
                 # features = get_features(gray)
                 features,  faces = get_features(gray)
+
+                pred_proc = clf.predict_proba([features])
+                # print("proc ", pred_proc)
+
                 try:
                     if not(faces is None):
                         # print(len(faces))
@@ -125,10 +129,11 @@ class Ui_Dialog():
                         # index = 0
                         height = 0
                         for (x, y, w, h) in faces:
-                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                            # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                             # Converting the OpenCV rectangle coordinates to Dlib rectangle
 
                             if height < h:
+                                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                                 height = h
                                 # index = i
                                 dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
@@ -151,11 +156,14 @@ class Ui_Dialog():
             try:
 
                 pred = clf.predict([features])
-                #print(clf.predict_proba([features]))
+                # print(clf.predict_proba([features]))
                 #print(Emotions(int(str(pred).strip('[').strip(']'))).name)
-                self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name)
+                # pred_proc = clf.predict
+                # print("proc ",pred_proc)
+                self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name, pred_proc)
             except Exception as err:
-                pass#print(err)
+                print('niedzialaalalalal')
+                pass
 
 
             cv2.imshow('frame', frame)
@@ -175,14 +183,18 @@ class Ui_Dialog():
     def ready(self):
         print("ready")
 
-    def readPercentValues(self, emotion):       
+    def readPercentValues(self, mainemo, emotion):
+        emotion = emotion[0]
+        print('--------', mainemo)
+        print('******', emotion)
+        percentValues['sadness'] = emotion[0]*100
+        percentValues['surprise'] = emotion[1]*100
+        percentValues['fear'] = emotion[2]*100
+        percentValues['contempt'] = emotion[3]*100
+        percentValues['happy'] = emotion[4]*100
+        percentValues['neutral'] = emotion[5]*100
+        percentValues['disgust'] = emotion[6]*100
 
-        #if self.radioCamera.isChecked():
-        #    print('camera checked')
-        #if self.radioMovie.isChecked():
-        #    print('movie checked')
-        #if self.radioPhoto.isChecked():
-        #    print('photo checked')
         self.smutek_progress.setValue(percentValues['sadness'])
         self.zaskoczenie_progress.setValue(percentValues['surprise'])
         self.strach_progress.setValue(percentValues['fear'])
@@ -191,7 +203,7 @@ class Ui_Dialog():
         self.anger_progress.setValue(percentValues['anger'])
         self.spokoj_progress.setValue(percentValues['neutral'])
         self.obrzydzenie_progress.setValue(percentValues['disgust'])
-        pixmap = QPixmap('emojis/' + emotion + '.png')
+        pixmap = QPixmap('emojis/' + mainemo + '.png')
         self.emotionIcon.setPixmap(pixmap)
 
     def startCaptureCamera(self):
@@ -263,9 +275,13 @@ class Ui_Dialog():
                         cv2.circle(image, pos, 2, color=(0, 0, 255), thickness=1)
                 except Exception as err:
                     pass  # print(err)
+
                 try:
                     pred = clf.predict([features])
-                    self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name)
+                    pred_proba = clf.predict_proba([features])
+                    # print("Procenty:", pred_proba)
+                    #tu trzeba rpzekazać
+                    self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name, pred_proba)
                 except Exception as err:
                     pass#print(err)
 
@@ -460,8 +476,8 @@ class Ui_Dialog():
 if __name__ == "__main__":
     #clf = run_recognizer()
     with open('trained_model_new74.pkl', 'rb') as handle:
-        clf = pickle.load(handle)
-    # clf = joblib.load('clf_lsvc.pkl')
+        # clf = pickle.load(handle)
+        clf = joblib.load('clf_lsvc.pkl')
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     Form = QtWidgets.QWidget()

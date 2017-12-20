@@ -49,29 +49,30 @@ class Emotions(Enum):
 
 def get_features(im):
     faces = faceCascade.detectMultiScale(im)
+
     if len(faces) == 0:
-        return None  # no face detected :(
+        return None, None  # no face detected :(
+    try:
+        for (x, y, w, h) in faces:
+            cur_feat = []
+            x_l = x
+            x_r = x + w
+            y_t = y
+            y_b = y + h
+            d = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
 
-    for (x, y, w, h) in faces:
-        cur_feat = []
-        sav_feat = []
-        x_l = x
-        x_r = x + w
-        y_t = y
-        y_b = y + h
-        d = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
-
-        width = x_r - x_l
-        height = y_b - y_t
-        shape = sp68(im, d)
-        for i in range(0, 68):
-            feat_x = (shape.part(i).x - x_l) / width
-            feat_y = (shape.part(i).y - y_t) / height
-            cur_feat.append(feat_x)
-            cur_feat.append(feat_y)
-            data = np.vstack((feat_x, feat_y))
-            sav_feat.append(data)
-    return faces, sav_feat, cur_feat
+            width = x_r - x_l
+            height = y_b - y_t
+            shape = sp68(im, d)
+            for i in range(0, 68):
+                feat_x = (shape.part(i).x - x_l) / width
+                feat_y = (shape.part(i).y - y_t) / height
+                cur_feat.append(feat_x)
+                cur_feat.append(feat_y)
+        # return faces, sav_feat, cur_feat
+        return cur_feat, faces
+    except:
+        return
 
 def addEmojiToArray():
   for emotion in Emotions:
@@ -106,39 +107,49 @@ class Ui_Dialog():
         counter = 0
         frameStep = 1
         features = None
-        
+
         while (self.cap.isOpened()):
             ret, frame = self.cap.read()
             counter += 1
+
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
             if frameStep == counter:
                 counter = 0
-                faces, points, features = get_features(gray)
+                # features = get_features(gray)
+                features,  faces = get_features(gray)
                 try:
-                    # print(len(faces))
-                    for (x, y, w, h) in faces:
-                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    if not(faces is None):
+                        # print(len(faces))
+                        i = 0
+                        # index = 0
+                        height = 0
+                        for (x, y, w, h) in faces:
+                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                            # Converting the OpenCV rectangle coordinates to Dlib rectangle
 
+                            if height < h:
+                                height = h
+                                # index = i
+                                dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+                            i += 1
+                        # print(len(points))
 
-                        # Converting the OpenCV rectangle coordinates to Dlib rectangle
-                        dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
-                    # print(len(points))
-                    landmarks = np.matrix([[p.x, p.y]
-                                           for p in predictor(frame, dlib_rect).parts()])
+                        landmarks = np.matrix([[p.x, p.y]
+                                               for p in predictor(frame, dlib_rect).parts()])
 
-                    for idx, point in enumerate(landmarks):
-                        pos = (point[0, 0], point[0, 1])
-
-                        # cv2.putText(frame, str(idx), pos,
-                        #
-                        #             fontFace=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
-                        #             fontScale=0.4,
-                        #             color=(0, 0, 255))
-                        cv2.circle(frame, pos, 2, color=(0, 0, 255), thickness=1)
-
+                        for idx, point in enumerate(landmarks):
+                            pos = (point[0, 0], point[0, 1])
+                            # cv2.putText(frame, str(idx), pos,
+                            #
+                            #             fontFace=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                            #             fontScale=0.4,
+                            #             color=(0, 0, 255))
+                            cv2.circle(frame, pos, 2, color=(0, 0, 255), thickness=1)
                 except Exception as err:
                     pass #print(err)
             try:
+
                 pred = clf.predict([features])
                 #print(clf.predict_proba([features]))
                 #print(Emotions(int(str(pred).strip('[').strip(']'))).name)
@@ -222,15 +233,43 @@ class Ui_Dialog():
             try:
                 image = cv2.imread(fileName) #open image
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #convert to grayscale
-                features = get_features(gray)
+                features, faces = get_features(gray)
+                try:
+                    # print(len(faces))
+                    i = 0
+                    # index = 0
+                    height = 0
+                    for (x, y, w, h) in faces:
+                        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        # Converting the OpenCV rectangle coordinates to Dlib rectangle
+
+                        if height < h:
+                            height = h
+                            # index = i
+                            dlib_rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
+                        i += 1
+                    # print(len(points))
+
+                    landmarks = np.matrix([[p.x, p.y]
+                                           for p in predictor(image, dlib_rect).parts()])
+
+                    for idx, point in enumerate(landmarks):
+                        pos = (point[0, 0], point[0, 1])
+                        # cv2.putText(frame, str(idx), pos,
+                        #
+                        #             fontFace=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                        #             fontScale=0.4,
+                        #             color=(0, 0, 255))
+                        cv2.circle(image, pos, 2, color=(0, 0, 255), thickness=1)
+                except Exception as err:
+                    pass  # print(err)
                 try:
                     pred = clf.predict([features])
                     self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name)
                 except Exception as err:
                     pass#print(err)
 
-                pixmap = QPixmap(fileName)
-                self.photoImage.setPixmap(pixmap)
+                cv2.imshow('frame', image)
                 
             except:
                 print('something wrong')

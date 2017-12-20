@@ -162,11 +162,12 @@ class Ui_Dialog():
                 # print("proc ",pred_proc)
                 self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name, pred_proc)
             except Exception as err:
-                print('niedzialaalalalal')
+                # print('niedzialaalalalal')
                 pass
 
 
-            cv2.imshow('frame', frame)
+            cv2.imshow('Kamera', frame)
+            cv2.moveWindow('Kamera', 360, 20)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         self.cap.release()
@@ -185,8 +186,8 @@ class Ui_Dialog():
 
     def readPercentValues(self, mainemo, emotion):
         emotion = emotion[0]
-        print('--------', mainemo)
-        print('******', emotion)
+        # print('--------', mainemo)
+        # print('******', emotion)
         percentValues['sadness'] = emotion[0]*100
         percentValues['surprise'] = emotion[1]*100
         percentValues['fear'] = emotion[2]*100
@@ -285,15 +286,19 @@ class Ui_Dialog():
                 except Exception as err:
                     pass#print(err)
 
-                cv2.imshow('frame', image)
-                
+                image = cv2.resize(image, (480, 480), interpolation = cv2.INTER_CUBIC)
+                cv2.imshow('Zdjecie', image)
+                cv2.moveWindow('Zdjecie', 360, 20)
+                # cv2.resizeWindow('Zdjecie', 100, 100)
+
             except:
                 print('something wrong')
 
     def setupUi(self, Dialog):
             Dialog.setObjectName("Dialog")
             # rozmiar okna
-            Dialog.resize(240, 480)
+            Dialog.setGeometry(QtCore.QRect(100, 50, 240, 480))
+            # Dialog.resize(240, 480)
 
             # tworzenie ramek na przyciski
             self.frame = self.setUpFrame(Dialog, "camera", (10, 10, 241, 461))
@@ -475,9 +480,9 @@ class Ui_Dialog():
 
 if __name__ == "__main__":
     #clf = run_recognizer()
-    with open('trained_model_new74.pkl', 'rb') as handle:
-        # clf = pickle.load(handle)
-        clf = joblib.load('clf_lsvc.pkl')
+    with open('model_procent53.pkl', 'rb') as handle:
+        clf = pickle.load(handle)
+        # clf = joblib.load('clf_lsvc.pkl')
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     Form = QtWidgets.QWidget()

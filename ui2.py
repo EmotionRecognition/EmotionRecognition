@@ -11,7 +11,7 @@ from enum import Enum
 from sklearn.externals import joblib
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets, QtMultimedia
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngine, QtMultimedia
 
 import cv2
 import numpy as np
@@ -119,7 +119,12 @@ class Ui_Dialog():
                 # features = get_features(gray)
                 features,  faces = get_features(gray)
 
-                pred_proc = clf.predict_proba([features])
+                pred_proc = None
+                # if features:
+                #     pass
+                # else:
+                #     pred_proc = clf.predict_proba([features])
+
                 # print("proc ", pred_proc)
 
                 try:
@@ -163,6 +168,7 @@ class Ui_Dialog():
                 #print(Emotions(int(str(pred).strip('[').strip(']'))).name)
                 # pred_proc = clf.predict
                 # print("proc ",pred_proc)
+                pred_proc = clf.predict_proba([features])
                 self.readPercentValues(Emotions(int(str(pred).strip('[').strip(']'))).name, pred_proc)
             except Exception as err:
                 # print('niedzialaalalalal')
@@ -188,16 +194,20 @@ class Ui_Dialog():
         print("ready")
 
     def readPercentValues(self, mainemo, emotion):
+        # print(len(emotion[0]))
+        # print(emotion[0])
         emotion = emotion[0]
         # print('--------', mainemo)
-        # print('******', emotion)
-        percentValues['sadness'] = emotion[0]*100
-        percentValues['surprise'] = emotion[1]*100
-        percentValues['fear'] = emotion[2]*100
-        percentValues['contempt'] = emotion[3]*100
-        percentValues['happy'] = emotion[4]*100
-        percentValues['neutral'] = emotion[5]*100
-        percentValues['disgust'] = emotion[6]*100
+        # print('******', emotion[0])
+        percentValues['neutral'] = emotion[0] * 100
+        percentValues['anger'] = emotion[1] * 100
+        # percentValues['contempt'] = emotion[2] * 100
+        percentValues['contempt'] = emotion[0] * 50
+        percentValues['disgust'] = emotion[2] * 100
+        percentValues['fear'] = emotion[3] * 100
+        percentValues['happy'] = emotion[4] * 100
+        percentValues['sadness'] = emotion[5]*100
+        percentValues['surprise'] = emotion[6]*100
 
         self.smutek_progress.setValue(percentValues['sadness'])
         self.zaskoczenie_progress.setValue(percentValues['surprise'])
@@ -483,7 +493,8 @@ class Ui_Dialog():
 
 if __name__ == "__main__":
     #clf = run_recognizer()
-    with open('model_procent53.pkl', 'rb') as handle:
+    with open('dupa_a_nie_klasyfikator.pkl', 'rb') as handle:
+    # with open('model_procent53.pkl', 'rb') as handle:
         clf = pickle.load(handle)
         # clf = joblib.load('clf_lsvc.pkl')
     app = QtWidgets.QApplication(sys.argv)
